@@ -1,8 +1,12 @@
 -- Showcase: launch the game with QUINTESSENCE_SHOWCASE set to a .png path; once the main
 -- menu is up, this clears it, lays out the new cards beside a few vanilla ones at real
 -- scale, saves a screenshot there and quits. For checking the art in the engine.
+-- QUINTESSENCE_SHOWCASE_PALETTE=lc or hc shows every suit in normal or high-contrast
+-- colours for the shot, whatever the settings say; the settings are put back before quitting.
 
 local out_path = os.getenv("QUINTESSENCE_SHOWCASE")
+local palette = os.getenv("QUINTESSENCE_SHOWCASE_PALETTE")
+local saved_palettes
 
 local rows = {
   { "j_quint_wacky", "j_quint_shrewd", "j_quint_coalition", "j_quint_envious", "j_droll", "j_tribe" },
@@ -16,6 +20,11 @@ local function build()
   end
   if G.title_top then G.title_top:remove(); G.title_top = nil end
   if G.SPLASH_LOGO then G.SPLASH_LOGO:remove(); G.SPLASH_LOGO = nil end
+
+  if palette then
+    saved_palettes = copy_table(G.SETTINGS.colour_palettes)
+    for _, suit in ipairs(SMODS.Suit.obj_buffer) do G.SETTINGS.colour_palettes[suit] = palette end
+  end
 
   local w, h = G.ROOM.T.w, G.ROOM.T.h
   local row_h = G.CARD_H * 1.12
@@ -53,6 +62,7 @@ function Game:update(dt)
       phase = "done"
     end)
   elseif phase == "done" then
+    if saved_palettes then G.SETTINGS.colour_palettes = saved_palettes end
     love.event.quit()
   end
 end

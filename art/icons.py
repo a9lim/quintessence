@@ -1,8 +1,9 @@
 """icons.py — the mod icon.
 
-Quintessence: the fifth element, the fifth suit. Four small lozenges in the
-four old suit colours sit at the compass points, and the Wild star stands in
-the middle of them, on a dark rounded tile.
+Quintessence: the fifth element, the fifth suit. The Wild asterisk on a dark
+tile, inked the way the Ace is: the upright in Wild purple, the four slanted
+arms in the four old suit colours (lightened where the dark tile would
+swallow them).
 
 Every pixel here is set by this program.
 
@@ -16,28 +17,8 @@ from pixel import Canvas, Palette, dilate
 
 PAL = Palette(
     bg="#374649", bg2="#4f6367", edge="#2a3538",
-    X="#9a5bd6", X2="#c9a2f2", wh="#ffffff",
-    H="#f03464", D="#f06b3f", C="#2f8f83", S="#6a74b8", g="#ffa300",
+    X="#a27fd0", H="#f03464", D="#f06b3f", C="#3f9f92", S="#6a74b8",
 )
-
-STAR = """
-.......##.......
-.......##.......
-......####......
-......####......
-.....######.....
-....########....
-..############..
-################
-################
-..############..
-....########....
-.....######.....
-......####......
-......####......
-.......##.......
-.......##.......
-"""
 
 
 def icon():
@@ -47,17 +28,17 @@ def icon():
     c.fill(tile, "bg")
     c.fill(tile & ~np.roll(tile, 1, axis=0), "bg2")           # top bevel
     c.fill(dilate(tile) & ~tile, "edge")
-    # the four suits, as lozenges at the corners
-    for (x, y), col in (((8, 8), "H"), ((25, 8), "D"), ((8, 25), "C"), ((25, 25), "S")):
-        d = np.abs(xx - x - 0.0) + np.abs(yy - y - 0.0)
-        c.fill(d <= 3, col)
-    # the fifth
-    t = Canvas(34, 34, PAL)
-    t.stamp(STAR, 9, 9, {"#": "X"})
-    c.fill(dilate(t.mask(), diag=True) & tile, "bg")
-    c.blit(t)
-    c.fill(t.mask() & (np.abs(xx - 16.5) + np.abs(yy - 16.5) <= 2.5), "wh")
-    c.fill(t.mask() & (np.abs(xx - 16.5) + np.abs(yy - 16.5) <= 1), "g")
+    dx, dy = xx - 16.5, yy - 16.5
+
+    def arm(ang, r=12.5, hw=2.6):
+        ux, uy = np.cos(np.radians(ang)), np.sin(np.radians(ang))
+        along = dx * ux + dy * uy
+        across = np.abs(-dx * uy + dy * ux)
+        return (along >= 0) & (along <= r) & (across <= hw - 0.9 * (along > r - 1.2))
+
+    for ang, col in ((-150, "H"), (-30, "D"), (150, "C"), (30, "S"), (-90, "X"), (90, "X")):
+        c.fill(arm(ang), col)
+    c.fill(np.abs(dx) + np.abs(dy) <= 4, "X")
     return c
 
 

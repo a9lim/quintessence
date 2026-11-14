@@ -105,6 +105,16 @@ The ideas come from other mods:
 
 No code or art is copied from them.
 
+## License
+
+The code and the original art are [GPL-3.0-or-later](LICENSE).
+
+Some sprites in `assets/` are built from Balatro's own art, © LocalThunk, so that they match the game: the Wild
+suit's rank glyphs and court cards, the four jokers, and the planets' frames, name plates and hand strips. Those
+pixels aren't ours to license. They're included only for use with Balatro and aren't covered by the GPL.
+[art/NOTES.md](art/NOTES.md#provenance-what-derives-from-which-vanilla-cell) lists the vanilla card behind each one.
+The programs in `art/` contain no Balatro pixels; they read the textures from your own copy of the game.
+
 ## Development
 
 - `scripts/test` runs the unit tests on LuaJIT. Without `luajit` installed, it borrows the LÖVE runtime from your
@@ -112,6 +122,9 @@ No code or art is copied from them.
 - `scripts/selftest` boots the game with the in-game checks in `tests/ingame.lua` and prints the results. It needs
   Steam running and this repo in your `Mods` folder (a symlink works; balala leaves symlinked checkouts alone).
 - Launching the game with `QUINTESSENCE_SHOWCASE=out.png` lays the new cards out beside vanilla ones, saves a
-  screenshot and quits, for checking the art in the engine.
-- The art is drawn by the Python programs in `art/` on a small pixel-art engine (`art/pixel.py`);
-  `python3 art/build.py` redraws everything in `assets/`. Design notes are in `art/NOTES.md`.
+  screenshot and quits, for checking the art in the engine. Add `QUINTESSENCE_SHOWCASE_PALETTE=lc` (or `hc`) to
+  show normal or high-contrast colours whatever your settings say.
+- The art is made by the Python programs in `art/` on a small pixel-art engine (`art/pixel.py`), partly from
+  Balatro's own textures. `python3 art/build.py` rebuilds `assets/`; it reads the textures from your Balatro install
+  (set `BALATRO_LOVE` to the path of `Balatro.love` if it isn't in the default Steam folder). Design notes are in
+  `art/NOTES.md`.

@@ -6,6 +6,10 @@ Runs each sheet program and writes assets/1x/<name> and assets/2x/<name>,
 the 2x being the 1x upscaled by exact nearest-neighbour x2. Then checks the
 sizes the Lua side depends on.
 
+The deck, joker and planet sheets are derived from Balatro's own textures,
+read from the installed game archive (override its path with BALATRO_LOVE).
+Without the game the build stops with a message saying so.
+
 fable, 2026-11-14 (claude-fable-5-2)
 """
 from __future__ import annotations
@@ -35,6 +39,12 @@ EXPECT = {
 
 
 def main():
+    import vanilla
+    try:
+        vanilla.texture("8BitDeck")
+    except vanilla.MissingGame as e:
+        print(f"build.py: {e}", file=sys.stderr)
+        return 2
     made = {}
     for mod in (wild_deck, planets, jokers, icons):
         for name, (canvas, pal) in mod.outputs().items():

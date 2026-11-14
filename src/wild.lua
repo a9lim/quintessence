@@ -24,8 +24,8 @@ SMODS.Suit {
   hc_atlas = "wild_deck_hc",
   lc_ui_atlas = "wild_ui",
   hc_ui_atlas = "wild_ui_hc",
-  -- Violet, and green in high contrast, where Spades are already purple (art/NOTES.md).
-  lc_colour = "9a5bd6",
+  -- Muted purple, and green in high contrast, where Spades are already purple (art/NOTES.md).
+  lc_colour = "8b64b4",
   hc_colour = "1fa84f",
   -- Never rolled at random: not in starting decks, not as a Standard pack front, not for
   -- newly created cards. Returning false for { rank = "" } also hides the Wild row in the

@@ -1,18 +1,23 @@
 """planets.py — five planet cards for the new poker hands.
 
 Quaoar (Spectrum), Haumea (Straight Spectrum), Sedna (Spectrum House),
-Makemake (Spectrum Five) and the Asteroid Belt (Bulwark). All trans-Neptunian
-dwarfs but the last, so they are drawn to sit beside Ceres and Eris: the teal
-planet-card frame, a name plate, a small body on a starfield, and a strip of
-five little cards along the bottom that spells out the hand.
+Makemake (Spectrum Five) and the Asteroid Belt (Bulwark).
 
-What is true of each body is what is drawn: Quaoar's ring far outside where a
-ring should survive, with Weywot; Haumea a fast-spinning ice egg with a dark
-red spot, a ring and two moons; Sedna deep red and alone, the Sun only the
-brightest star and its orbit a long thin arc; Makemake bright and tawny with
-one dark moon; the Belt a river of rocks.
+Round 2: the card itself is Balatro's. The frame and the solar-system strip
+across the top are taken from Planet X (from Ceres for the Belt, which is
+where Ceres lives); the name plate is Pluto's, stretched to fit; the plate
+lettering is traced from vanilla plates (four letters vanilla never uses are
+drawn to match); and the five little cards along the bottom are the strips
+of the vanilla hand each new hand is the Spectrum cousin of (Flush, Straight
+Flush, Flush House, Flush Five, Five of a Kind) with each card's marks
+re-inked in a different suit colour. The bodies and the starfields are drawn
+here: Quaoar's ring far outside where a ring should survive, with Weywot;
+Haumea a fast-spinning ice egg with a dark red spot, a ring and two moons;
+Sedna deep red and alone, the Sun only the brightest star and its orbit a
+long thin arc; Makemake bright and tawny with one dark moon; the Belt a
+river of rocks.
 
-Every pixel here is set by this program.
+See NOTES.md for exactly which vanilla cells are used.
 
 fable, 2026-11-14 (claude-fable-5-2)
 """
@@ -20,14 +25,15 @@ from __future__ import annotations
 
 import numpy as np
 
-from pixel import Canvas, Palette, dilate, sheet
+import vanilla as V
+from pixel import Canvas, Palette, components, dilate, erode, sheet
 
 W, H = 71, 95
 
 PAL = Palette(
     bg="#5b9baa", lt="#dff5fc", dk="#4f6367", pn="#84c5d2", wh="#ffffff",
     # suit dots on the little cards
-    H="#f03464", D="#f06b3f", C="#235955", S="#3c4368", X="#9a5bd6",
+    H="#f03464", D="#f06b3f", C="#235955", S="#3c4368", X="#8b64b4",
     st1="#b8bcc0", st2="#8d9499", st3="#6b7378",
     # Quaoar
     q0="#6e3a34", q1="#96503f", q2="#bd6a4c", q3="#dc8b63", q4="#f2b088",
@@ -42,25 +48,58 @@ PAL = Palette(
     r0="#57504c", r1="#7b7269", r2="#a1978a", r3="#c7bdae", r4="#e4dccd",
 )
 
-# 5x6 plate lettering, mine: two-pixel stems.
-FONT = {
-    "A": [".###.", "##.##", "##.##", "#####", "##.##", "##.##"],
-    "B": ["####.", "##.##", "####.", "##.##", "##.##", "####."],
-    "D": ["####.", "##.##", "##.##", "##.##", "##.##", "####."],
-    "E": ["#####", "##...", "####.", "##...", "##...", "#####"],
-    "H": ["##.##", "##.##", "#####", "##.##", "##.##", "##.##"],
-    "I": ["##", "##", "##", "##", "##", "##"],
-    "K": ["##.##", "##.##", "####.", "####.", "##.##", "##.##"],
-    "L": ["##..", "##..", "##..", "##..", "##..", "####"],
-    "M": ["##.##", "#####", "#####", "##.##", "##.##", "##.##"],
-    "N": ["##..#", "###.#", "#####", "##.##", "##..#", "##..#"],
-    "O": [".###.", "##.##", "##.##", "##.##", "##.##", ".###."],
-    "Q": [".###.", "##.##", "##.##", "##.##", "##.#.", ".##.#"],
-    "R": ["####.", "##.##", "##.##", "####.", "##.##", "##.##"],
-    "S": [".####", "##...", ".###.", "...##", "...##", "####."],
-    "T": ["####", ".##.", ".##.", ".##.", ".##.", ".##."],
-    "U": ["##.##", "##.##", "##.##", "##.##", "##.##", ".###."],
+FRAME = {"5b9baa": "bg", "dff5fc": "lt", "4f6367": "dk", "84c5d2": "pn", "ffffff": "wh"}
+SUITS = ["H", "D", "X", "C", "S"]
+
+# Plate letters vanilla never uses, drawn to match its 4x6 face.
+EXTRA = {
+    "D": ["###.", "##.#", "##.#", "##.#", "##.#", "###."],
+    "Q": [".##.", "##.#", "##.#", "##.#", "###.", ".#.#"],
+    "K": ["##.#", "##.#", "###.", "###.", "##.#", "##.#"],
+    "B": ["###.", "##.#", "###.", "##.#", "##.#", "###."],
 }
+# word on a vanilla plate -> (Tarots cell, the letters to take from it)
+TRACE = [((8, 3), "PLUTO"), ((0, 3), "MERCURY"), ((5, 3), "SATURN"),
+         ((2, 3), "EARTH"), ((4, 3), "JUPITER")]
+
+
+def vcell(col, row):
+    """A vanilla planet cell in this sheet's palette."""
+    a = V.cell("Tarots", col, row)
+    hx = V.hexes(a)
+    c = Canvas(W, H, PAL)
+    rgbs = {h: np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)]) for h in FRAME}
+    for h in np.unique(hx):
+        if not h:
+            continue
+        if h in FRAME:
+            name = FRAME[h]
+        else:
+            rgb = np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)])
+            name = FRAME[min(rgbs, key=lambda k: ((rgbs[k] - rgb) ** 2).sum())]
+        c.fill(hx == h, name)
+    return c
+
+
+def trace_font():
+    font = dict(EXTRA)
+    for (col, row), word in TRACE:
+        d = vcell(col, row).mask("dk")[20:26, 10:61]
+        runs, cur = [], []
+        for i, v in enumerate(d.any(0)):
+            if v:
+                cur.append(i)
+            elif cur:
+                runs.append(d[:, cur[0]:cur[-1] + 1])
+                cur = []
+        runs = runs[1:-1]                        # the plate's own two ends
+        assert len(runs) == len(word), (word, len(runs))
+        for ch, g in zip(word, runs):
+            font.setdefault(ch, ["".join("#" if v else "." for v in r) for r in g])
+    return font
+
+
+FONT = None
 
 
 def text_width(s):
@@ -73,87 +112,60 @@ def text(c, s, x, y, col):
         x += len(FONT[ch][0]) + 1
 
 
-def card_mask(c):
-    m = c.blank()
-    m[1:94, 4:67] = True
-    for i, n in enumerate((3, 2, 1)):          # stepped corner
-        for y in (1 + i, 93 - i):
-            m[y, 4:4 + n] = False
-            m[y, 67 - n:67] = False
-    return m
-
-
-def planet_card(index, lines, seed):
-    """Frame, top strip (which of the five this is), name plate, stars."""
-    c = Canvas(W, H, PAL)
+def plate(c, lines):
+    """Pluto's name plate, widened (and for two lines, deepened) by
+    repeating its middle column / row."""
+    src = vcell(8, 3)
+    sil = src.mask("dk", "lt")
     yy, xx = c.grid()
-    m0 = card_mask(c)
-    from pixel import erode
-    m1 = erode(m0, diag=False)
-    m2 = erode(m1)
-    m3 = erode(erode(m2))
-    c.fill(m0, "bg")
-    c.fill(m1, "dk")
-    c.fill(m2, "lt")
-    c.fill(m3, "bg")
-    # top and bottom panels
-    for y0, y1 in ((4, 12), (78, 90)):
-        pm = c.rrect_mask(9, y0, 61, y1, 1)
-        c.fill(pm, "pn")
-    # top strip: five bodies, this one lit; a little sun at the left
-    c.stamp(["..#..", ".###.", "#####", ".###.", "..#.."], 12, 6, {"#": "lt"})
-    c.hline(19, 22, 8, "dk")
-    for i in range(5):
-        x = 26 + i * 7
-        c.rect(x, 7, x + 2, 9, "dk", fill=False)
-        if i == index:
-            c.rect(x - 1, 6, x + 3, 10, "dk", fill=False)
-            c.rect(x, 7, x + 2, 9, "wh")
-        if i < 4:
-            c.px(x + 5, 8, "dk")
-    # stars
+    sil &= (yy >= 15) & (yy <= 30) & (xx >= 9) & (xx <= 61)
+    sil = next(p for p in components(sil) if p[17, 35])
+    ys, xs = np.nonzero(sil)
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    wmax = max(text_width(s) for s in lines)
+    ex = max(0, (wmax + 4 - (x1 - x0 - 3) + 1) // 2)
+    ey = 7 * (len(lines) - 1)
+    out = c.blank()
+    for y in range(y0, y1 + 1 + ey):
+        sy = y if y <= 22 else max(22, y - ey)
+        for x in range(x0 - ex, x1 + 1 + ex):
+            sx = x + ex if x < 35 - ex else (x - ex if x > 35 + ex else 35)
+            out[y, x] = sil[sy, sx]
+    c.fill(dilate(out), "bg")
+    c.fill(out, "lt")
+    c.fill(out & ~erode(out), "dk")
+    for j, s in enumerate(lines):
+        text(c, s, 35 - (text_width(s) - 1) // 2, 20 + 7 * j, "dk")
+
+
+def planet_card(lines, seed, top=(9, 2), strip=(9, 2), inks=SUITS, stone=False):
+    """Vanilla frame and top strip, a fresh starfield, the plate, and the
+    hand strip of a vanilla cousin with each card re-inked."""
+    global FONT
+    if FONT is None:
+        FONT = trace_font()
+    c = vcell(*top)
+    yy, xx = c.grid()
+    c.fill((yy >= 13) & (yy <= 77) & (xx >= 8) & (xx <= 62), "bg")
+    low = (yy >= 78) & (yy <= 90) & (xx >= 8) & (xx <= 62)
+    c.a[low] = vcell(*strip).a[low]
+    for i, x in enumerate((12, 22, 32, 42, 52)):
+        card = low & (xx >= x) & (xx <= x + 6) & (yy >= 80) & (yy <= 88)
+        if stone:
+            c.fill(card & c.mask("lt", "dk"), "st1")
+            c.pxs([(x + 1, 82), (x + 4, 81), (x + 2, 85), (x + 5, 86), (x + 3, 83)], "st2")
+            c.pxs([(x + 5, 83), (x + 1, 87), (x + 3, 87)], "st3")
+        else:
+            c.fill(card & c.mask("dk"), inks[i])
     rng = np.random.default_rng(seed)
-    field = c.blank()
-    field[14:77, 9:62] = True
     for _ in range(46):
-        x, y = int(rng.integers(9, 62)), int(rng.integers(14, 77))
-        c.px(x, y, "lt")
+        c.px(int(rng.integers(9, 62)), int(rng.integers(14, 77)), "lt")
     for _ in range(3):
-        x, y = int(rng.integers(12, 59)), int(rng.integers(34, 74))
+        x, y = int(rng.integers(12, 59)), int(rng.integers(36, 74))
         c.vline(x, y - 2, y + 2, "lt")
         c.hline(x - 1, x + 1, y, "lt")
-    # name plate
-    wmax = max(text_width(s) for s in lines)
-    half = min(26, max(23, (wmax + 1) // 2 + 3))
-    y0, y1 = 16, 16 + 5 + 7 * len(lines)
-    pm = c.rrect_mask(35 - half, y0, 35 + half, y1, 5)
-    c.fill(pm, "lt")
-    c.fill(pm & ~erode(pm), "dk")
-    c.fill(dilate(pm) & ~pm, "bg")
-    for j, s in enumerate(lines):
-        text(c, s, 35 - text_width(s) // 2, y0 + 3 + 7 * j, "dk")
+    plate(c, lines)
     return c
-
-
-def hand_strip(c, dots, heights=None, groups=None, stone=False, big=False):
-    """Five little cards along the bottom panel."""
-    xs = [12, 22, 32, 42, 52] if groups is None else groups
-    for i, x in enumerate(xs):
-        dy = 0 if heights is None else heights[i]
-        y = 80 + dy
-        if stone:
-            c.rect(x, y, x + 6, y + 8, "st1")
-            c.pxs([(x + 1, y + 2), (x + 4, y + 1), (x + 2, y + 5), (x + 5, y + 6), (x + 3, y + 3)], "st2")
-            c.pxs([(x + 5, y + 3), (x + 1, y + 7), (x + 3, y + 7)], "st3")
-            c.pxs([(x, y), (x + 6, y), (x, y + 8), (x + 6, y + 8)], "pn")
-            continue
-        c.rect(x, y, x + 6, y + 8, "lt")
-        c.pxs([(x, y), (x + 6, y), (x, y + 8), (x + 6, y + 8)], "pn")
-        if big:
-            c.rect(x + 2, y + 3, x + 4, y + 5, dots[i])
-        else:
-            c.rect(x + 2, y + 3, x + 4, y + 4, dots[i])
-            c.rect(x + 3, y + 2, x + 3, y + 5, dots[i])
 
 
 def noise(c, seed, scale=5.0):
@@ -216,19 +228,18 @@ def moon(c, x, y, r, col, col2=None):
 
 
 def quaoar():
-    c = planet_card(0, ["QUAOAR"], 11)
+    c = planet_card(["QUAOAR"], 11, strip=(4, 3))
     cx, cy = 35, 53
     ring(c, cx, cy, 24, 7, -0.30, "lt", front=False)
     m = body(c, cx, cy, 10.5, 10.5, ["q0", "q1", "q2", "q3", "q4"], 3)
     ring(c, cx, cy, 24, 7, -0.30, "lt", front=True)
     ring(c, cx, cy, 24, 7, -0.30, "dk", front=True, gap_mask=~m)
     moon(c, 54, 37, 1.6, "st1", "st2")
-    hand_strip(c, ["H", "S", "X", "D", "C"], heights=[0, 1, 0, 1, 0])
     return c
 
 
 def haumea():
-    c = planet_card(1, ["HAUMEA"], 23)
+    c = planet_card(["HAUMEA"], 23, strip=(7, 3))
     yy, xx = c.grid()
     cx, cy, ang = 35, 53, -0.38
     ring(c, cx, cy, 25, 5, ang + 0.05, "lt", front=False)
@@ -243,12 +254,11 @@ def haumea():
     # spin ticks
     c.pxs([(18, 66), (19, 67), (21, 68)], "lt")
     c.pxs([(50, 38), (52, 39), (53, 40)], "lt")
-    hand_strip(c, ["H", "D", "X", "C", "S"], heights=[2, 1, 0, -1, -2])
     return c
 
 
 def sedna():
-    c = planet_card(2, ["SEDNA"], 37)
+    c = planet_card(["SEDNA"], 37, strip=(8, 2))
     # the long orbit, and the Sun as only the brightest star
     for th in np.linspace(0.05, 1.5, 260):
         x = 14 + 62 * np.cos(th) - 14
@@ -260,16 +270,13 @@ def sedna():
     c.hline(12, 18, 70, "wh")
     c.pxs([(14, 69), (16, 69), (14, 71), (16, 71)], "lt")
     body(c, 39, 52, 8.6, 8.6, ["s0", "s1", "s2", "s3", "s4"], 9, mott=0.08)
-    hand_strip(c, ["H", "X", "S", "D", "C"], heights=[0, 0, 0, 1, 1],
-               groups=[11, 20, 29, 44, 53])
     return c
 
 
 def makemake():
-    c = planet_card(3, ["MAKEMAKE"], 51)
+    c = planet_card(["MAKEMAKE"], 51, strip=(3, 2))
     body(c, 34, 54, 12.5, 12.5, ["m0", "m1", "m2", "m3", "m4"], 14, mott=0.14)
     moon(c, 53, 42, 1.6, "moon2", "moon")
-    hand_strip(c, ["H", "D", "X", "C", "S"], big=True)
     return c
 
 
@@ -291,7 +298,7 @@ def rock(c, cx, cy, r, seed, tones=("r0", "r1", "r2", "r3", "r4")):
 
 
 def belt():
-    c = planet_card(4, ["ASTEROID", "BELT"], 67)
+    c = planet_card(["ASTEROID", "BELT"], 67, top=(8, 2), stone=True)
     rng = np.random.default_rng(8)
     # dust along the band, then rocks back to front
     for _ in range(40):
@@ -305,7 +312,6 @@ def belt():
             (25, 44, 1.3), (47, 42, 1.4), (38, 73, 1.3), (57, 70, 1.2)]
     for i, (x, y, r) in enumerate(spec):
         rock(c, x, y, r, 40 + i)
-    hand_strip(c, None, stone=True)
     return c
 
 

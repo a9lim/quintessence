@@ -65,6 +65,8 @@ class Palette:
             return 0
         if isinstance(name, (int, np.integer)):
             return int(name)
+        if name not in self.names and isinstance(name, str) and name.startswith("#"):
+            self.add(name, name)             # literal hex colours join on demand
         return self.names.index(name)
 
     def swapped(self, **colours):
@@ -375,6 +377,45 @@ def erode(m, diag=False):
     return ~dilate(~p, diag)[1:-1, 1:-1]
 
 
+def from_rgba(a):
+    """An RGBA array as a canvas whose colours are named by their hex
+    ('#rrggbb'), for re-inking existing pixel art."""
+    a = np.asarray(a)
+    pal = Palette()
+    c = Canvas(a.shape[1], a.shape[0], pal)
+    v = (a[..., 0].astype(int) << 16) | (a[..., 1].astype(int) << 8) | a[..., 2]
+    op = a[..., 3] > 0
+    for u in np.unique(v[op]):
+        c.a[op & (v == u)] = pal.index(f"#{u:06x}")
+    return c
+
+
+def components(m, diag=False):
+    """Connected pieces of a mask, largest first."""
+    m = m.copy()
+    out = []
+    h, w = m.shape
+    nb = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+    if diag:
+        nb += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+    for y0, x0 in zip(*np.nonzero(m)):
+        if not m[y0, x0]:
+            continue
+        piece = np.zeros_like(m)
+        st = [(y0, x0)]
+        m[y0, x0] = False
+        while st:
+            y, x = st.pop()
+            piece[y, x] = True
+            for dy, dx in nb:
+                yy, xx = y + dy, x + dx
+                if 0 <= yy < h and 0 <= xx < w and m[yy, xx]:
+                    m[yy, xx] = False
+                    st.append((yy, xx))
+        out.append(piece)
+    return sorted(out, key=lambda q: -int(q.sum()))
+
+
 def sheet(cells, cols=None):
     """Lay equal-sized canvases out left-to-right, top-to-bottom."""
     cols = cols or len(cells)
@@ -383,7 +424,13 @@ def sheet(cells, cols=None):
     out = Canvas(cw * cols, ch * rows, cells[0].pal)
     for i, c in enumerate(cells):
         x, y = (i % cols) * cw, (i // cols) * ch
-        out.a[y:y + ch, x:x + cw] = c.a
+        if c.pal is out.pal:
+            out.a[y:y + ch, x:x + cw] = c.a
+        else:                                # cells with palettes of their own
+            for j, name in enumerate(c.pal.names[1:], 1):
+                if name not in out.pal.names:
+                    out.pal.add(name, "#%02x%02x%02x%02x" % c.pal.rgba[j])
+                out.a[y:y + ch, x:x + cw][c.a == j] = out.pal.index(name)
     return out
 
 

@@ -1,75 +1,87 @@
 # Quintessence art notes
 
-Painting-as-code, pixel edition. Engine: `art/pixel.py`. One program per
-sheet; `python3 art/build.py` regenerates everything into `assets/1x` and
-`assets/2x` (2x = exact nearest-neighbour x2). `art/look.py` renders previews
-into `art/preview/` (gitignored); it is the only thing that may be pointed at
-reference textures, and nothing it makes ships.
+Pixel art as code. Engine: `art/pixel.py`. One program per sheet;
+`python3 art/build.py` regenerates everything into `assets/1x` and
+`assets/2x` (2x = exact nearest-neighbour x2 of the 1x; build.py checks it).
+`art/look.py` renders previews into `art/preview/` (gitignored).
 
-## Wild suit
+**Round 2 (2026-11-14): the art now derives from Balatro's own textures.**
+`art/vanilla.py` reads them at build time from the installed game archive
+(`Balatro.love`, a zip; override the path with `BALATRO_LOVE`). Nothing from
+the archive is stored in the repo as source, but the built PNGs in `assets/`
+contain LocalThunk's pixels. build.py exits with a clear message if the
+archive is missing.
 
-- **Pip:** a solid four-pointed star (compass star / sparkle). 11x11 for the
-  layout pips, 9x9 in the corners, 16x16 for the UI icon. Chosen because it is
-  the one simple silhouette that none of heart/diamond/club/spade resembles
-  (concave between the points where a diamond is straight), it is its own
-  180-degree rotation, and four points = the four suits it stands in for.
-- **Ace:** one big star (two crossed lozenges) with an open eye, and in the
-  eye a lozenge quartered in the four vanilla suit colours.
-- **Colours (suit text colour):**
-  - normal: **`#9a5bd6`** (violet); shade `#7443b0`
-  - high contrast: **`#1fa84f`** (green); shade `#157a39`
-  - violet/green are the hues the other four suits leave free in each palette
-    (HC spades is already purple `#8a71e1`).
-- Shared with vanilla's look: outline `#374649`, gold `#ffa300`, blue
-  `#29adff`, whites `#ffffff/#e6e6e6/#acacac`; the four suit colours
-  `#f03464 #f06b3f #235955 #3c4368` (HC: `#f83b2f #e39100 #009cfd #8a71e1`)
-  appear as accents on the courts.
-- **Glyphs:** own 7x8 bold grotesque (2-px strokes), at vanilla's position
-  (x 6..12, y 7..14); corner pip x 5..13, y 16..24. Pip grid follows the
-  standard poker layouts; the whole cell is exactly 180-degree symmetric.
-- **Courts:** drawn as one upright figure, cut through the centre, completed
-  by 180-degree rotation (`Canvas.double_head`). Jack: slouched cap + feather,
-  star wand, sash striped in the four suits (diagonal cut). Queen: crown, long
-  hair, ermine collar, raised hand mirror, gold girdle with four stones
-  (opposite diagonal). King: beard, ermine mantle, orb staff, four stones in
-  crown and belt (horizontal cut). Held items are always top-right /
-  bottom-left so they clear the corner glyphs.
+## Wild suit colours (the suit's text colour)
 
-## Planets (`planets.py`, 5 cells: Quaoar, Haumea, Sedna, Makemake, Asteroid Belt)
+- normal: **`#8b64b4`** (muted purple); shade `#684a8f`
+- high contrast: **`#1fa84f`** (green); shade `#157a39`
 
-Vanilla planet-card conventions: teal frame (`#5b9baa` ground, `#dff5fc`
-light, `#4f6367` dark, `#84c5d2` panels), name plate, body on a starfield,
-bottom strip of five little cards that spells the hand. Own 5x6 plate font.
-Top strip is ours: a sun and five boxes, the lit box = which of the five.
-Bottom strips: Spectrum = five suit-coloured pips at uneven heights;
-Straight Spectrum = a staircase; Spectrum House = grouped 3 | 2;
-Spectrum Five = five identical big pips; Bulwark = five stone cards.
-Quaoar: far ring + Weywot. Haumea: tilted ice ellipsoid, dark red spot,
-ring, two moons. Sedna: small deep-red disc, the Sun as a bright star, a
-long dashed orbit arc. Makemake: tawny disc, one dark moon. Belt: rocks.
+The HC sheets are the same drawing with the palette swapped; the vanilla
+suit colours used as accents swap to `#f83b2f #e39100 #009cfd #8a71e1`.
 
-## Jokers (`jokers.py`, 4 cells: Wacky, Shrewd, The Coalition, Envious)
+## Wild pip
 
-White joker card (`#bfc7d5` border), own JOKER lettering down the left and
-turned up the right. Wacky: a five-tailed cap, one tail per suit colour,
-five-suit fan beneath. Shrewd: two-tone cap (muted violet / teal), narrow
-eyes, lopsided blue smile, five counted cards with five coloured dots.
-Coalition: dark slate card, five banners (five suit colours) swept into a
-gold knot, five-suit fan. Envious: green jester glaring at a plain card ->
-star card. Mini cards are sheared in whole-pixel steps, not rotated.
+An asterisk, six arms (`*`, Conway's star). Drawn here, not derived:
+11x11 layout pips, 9x9 corner pips, 16x16 UI icon. On the Ace it is one
+large asterisk whose upright is Wild purple and whose four slanted arms are
+hearts, diamonds, clubs, spades colours. The mod icon is the same figure on
+a dark tile.
 
-## Icon (`icons.py`)
+## Provenance: what derives from which vanilla cell
 
-34x34 dark tile, four suit-coloured lozenges at the corners, the Wild star
-in the middle.
+Cells are (column, row), 0-based, 71x95, in `resources/textures/1x/`.
 
-## Status
+### `wild_deck.png`, `wild_deck_hc.png` -- derived from `8BitDeck.png`
+- **Rank glyphs** (all 13 cells, both corners): the spades row's glyphs,
+  cells (0..12, 3), re-inked.
+- **Jack** (cell 9): head region from Jack of Hearts (9, 0); robes, frame
+  and held things from Jack of Diamonds (9, 2).
+- **Queen** (cell 10): head from Queen of Spades (10, 3); the rest from
+  Queen of Hearts (10, 0).
+- **King** (cell 11): head from King of Clubs (11, 1); the rest from King of
+  Spades (11, 3).
+- Collage rule: "head" = the two ends of the cell (|y-47| >= 23) within 17
+  px of the centre column (12 for the Jack). Robes' suit colour (and the
+  black suits' red) -> Wild purple; black suits' dark ink -> the common
+  outline `#374649`; heads keep their suit's colours.
+- **Not derived:** the asterisk pips, pip layouts (standard poker layouts),
+  the Ace's asterisk. `8BitDeck_opt2.png` is not used.
 
-All seven outputs build and pass the size / exact-2x check in `build.py`.
+### `wild_ui.png`, `wild_ui_hc.png` -- original (asterisk, no vanilla pixels)
 
-Things I would look at again with more time:
-- The courts are cleaner and plainer than vanilla's (less robe ornament);
-  the Queen's raised hand floats a little.
-- Wacky's face is busy at 1x; Envious reads "grumpy green jester" more
-  than specifically "envy".
-- HC: the orange stone on the Queen's gold girdle is low-contrast.
+### `jokers.png` -- derived from `Jokers.png`, whole cells re-inked
+- **Wacky Joker** <- Droll Joker (6, 0): cap cone/horns/bells and the fan's
+  pips re-inked in the five suit colours.
+- **Shrewd Joker** <- Crafty Joker (4, 14): cap and ruff re-inked purple /
+  teal; fan pips in the five suit colours.
+- **The Coalition** <- The Tribe (9, 4): ground re-inked plum, cracks
+  re-inked by direction in five suit colours, fan pips in five suit colours.
+- **Envious Joker** <- Greedy Joker (6, 1): re-inked yellow-green; the
+  diamond-patterned ground replaced by a tiling of our asterisk.
+
+### `planets.png` -- derived from `Tarots.png`
+- **Frame + top strip:** Planet X (9, 2) for Quaoar, Haumea, Sedna,
+  Makemake; Ceres (8, 2) for Asteroid Belt.
+- **Name plate shape:** Pluto (8, 3), widened/deepened by repeating its
+  middle column/row.
+- **Plate lettering:** traced from the plates of Pluto (8, 3), Mercury
+  (0, 3), Saturn (5, 3), Earth (2, 3), Jupiter (4, 3). D, Q, K, B do not
+  occur on vanilla plates and are drawn here to match.
+- **Bottom hand strip** (each card's marks re-inked in a different suit
+  colour): Quaoar <- Jupiter/Flush (4, 3); Haumea <- Neptune/Straight Flush
+  (7, 3); Sedna <- Ceres/Flush House (8, 2); Makemake <- Eris/Flush Five (3, 2)
+  (confirmed against the game's planet table); Asteroid Belt <-
+  Planet X/Five of a Kind (9, 2), cards re-inked as stone.
+- **Not derived:** the bodies (Quaoar + ring + Weywot, Haumea, Sedna + Sun +
+  orbit arc, Makemake + moon, the rocks) and the starfields.
+
+### `icon.png` -- original (no vanilla pixels)
+
+## Things to look at again
+
+- Fan pips on the three fan jokers are still vanilla's diamond shapes, only
+  re-coloured; they say "five suits" by colour, not by shape.
+- "ASTEROID BELT" needs a two-line plate, which vanilla never has.
+- Envious keeps the sin-family's shared smiling face (family likeness over
+  an envious expression).
