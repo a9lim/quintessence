@@ -1,0 +1,17 @@
+{
+  "id": "Quintessence",
+  "name": "Quintessence",
+  "display_name": "Quintessence",
+  "author": ["a9lim", "Claude"],
+  "description": "Wild becomes the fifth suit. Adds the Spectrum hands and Bulwark, with the planets and jokers that go with them.",
+  "prefix": "quint",
+  "main_file": "main.lua",
+  "priority": 0,
+  "badge_colour": "9a5bd6",
+  "badge_text_colour": "FFFFFF",
+  "version": "0.1.0",
+  "dependencies": [
+    "Steamodded (>=26.829.0)",
+    "SpectrumAPI"
+  ]
+}

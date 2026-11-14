@@ -1,0 +1,71 @@
+# Vanilla code that knows Wild only as an enhancement. Priority 10 runs these after
+# Steamodded's own patches (priority 0 and below), whose output they match.
+
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10
+
+# Hovering a Wild card says what it does, under its chips line (plain and enhanced cards).
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "localize{type = 'other', key = 'card_chips'..(specific_vars.nominal_chips < 0 and '_minus' or ''), nodes = desc_nodes, vars = {specific_vars.nominal_chips}}"
+position = "after"
+payload = "if card and card.base and card.base.suit == 'quint_Wild' then localize{type = 'other', key = 'quint_wild_card', nodes = desc_nodes, vars = {}} end"
+match_indent = true
+
+# Castle and The Idol name the suit of a random card in your deck. When that card is Wild,
+# they name a random vanilla suit instead: naming the Wild suit would leave only Wild cards
+# to match. (Skipping Wild cards would strand The Idol in an all-Wild deck.)
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "G.GAME.current_round.idol_card.suit = idol_card.base.suit"
+position = "at"
+payload = "G.GAME.current_round.idol_card.suit = Quintessence.vanilla_suit(idol_card.base.suit, 'idol_wild'..G.GAME.round_resets.ante)"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "G.GAME.current_round.castle_card.suit = castle_card.base.suit"
+position = "at"
+payload = "G.GAME.current_round.castle_card.suit = Quintessence.vanilla_suit(castle_card.base.suit, 'cas_wild'..G.GAME.round_resets.ante)"
+match_indent = true
+
+# Smeared Joker unlocks with three Wild cards in the deck; count the Wild suit.
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if v.ability.name == card.unlock_condition.extra.enhancement then count = count + 1 end"
+position = "at"
+payload = "if v.ability.name == card.unlock_condition.extra.enhancement or (card.unlock_condition.extra.e_key == 'm_wild' and v.base.suit == 'quint_Wild') then count = count + 1 end"
+match_indent = true
+
+# The "Flushed" achievement: a Flush made only of Wild cards. Five Wild cards now play as a
+# Spectrum, which outranks Flush, so an all-Wild Spectrum counts too.
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if args.handname == 'Flush' and args.scoring_hand then"
+position = "at"
+payload = "if (args.handname == 'Flush' or args.handname == 'spa_Spectrum') and args.scoring_hand then"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "if v.ability.name == 'Wild Card' then"
+position = "at"
+payload = "if v.ability.name == 'Wild Card' or v.base.suit == 'quint_Wild' then"
+match_indent = true
+
+# Driver's License counts enhanced cards; a Wild card was one in vanilla and still counts.
+[[patches]]
+[patches.pattern]
+target = "card.lua"
+pattern = "if next(SMODS.get_enhancements(v)) then self.ability.driver_tally = self.ability.driver_tally+1 end"
+position = "at"
+payload = "if next(SMODS.get_enhancements(v)) or v.base.suit == 'quint_Wild' then self.ability.driver_tally = self.ability.driver_tally+1 end"
+match_indent = true

@@ -1,0 +1,24 @@
+# A fix for SpectrumAPI. When it registers the winning jokers and planets, two of its loops
+# don't set SMODS.current_mod to the mod that owns each one, so with content from several
+# mods, an object can be registered under another mod's prefix and miss its art and text.
+
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 10
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS SpectrumAPI "main.lua"]'
+pattern = "local res = SMODS[top.object_type](top)"
+position = "before"
+payload = "SMODS.current_mod = top.loaded_by"
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = '=[SMODS SpectrumAPI "main.lua"]'
+pattern = "SMODS[top.object_type](top)"
+position = "before"
+payload = "SMODS.current_mod = top.loaded_by"
+match_indent = true
