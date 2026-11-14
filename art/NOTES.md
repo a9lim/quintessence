@@ -57,8 +57,6 @@ Cells are (column, row), 0-based, 71x95, in `resources/textures/1x/`.
   teal; fan pips in the five suit colours.
 - **The Coalition** <- The Tribe (9, 4): ground re-inked plum, cracks
   re-inked by direction in five suit colours, fan pips in five suit colours.
-- **Envious Joker** <- Greedy Joker (6, 1): re-inked yellow-green; the
-  diamond-patterned ground replaced by a tiling of our asterisk.
 
 ### `planets.png` -- derived from `Tarots.png`
 - **Frame + top strip:** Planet X (9, 2) for Quaoar, Haumea, Sedna,
@@ -80,8 +78,6 @@ Cells are (column, row), 0-based, 71x95, in `resources/textures/1x/`.
 
 ## Things to look at again
 
-- Fan pips on the three fan jokers are still vanilla's diamond shapes, only
-  re-coloured; they say "five suits" by colour, not by shape.
-- "ASTEROID BELT" needs a two-line plate, which vanilla never has.
-- Envious keeps the sin-family's shared smiling face (family likeness over
-  an envious expression).
+- Settled with a9 (2026-11-14): the two-line "ASTEROID BELT" plate and the
+  recoloured vanilla diamonds in the joker fans both stay. Envious Joker was
+  removed from the mod (too strong for vanilla-plus), and its art with it.

@@ -69,7 +69,7 @@ local function run()
   -- Registration
   check("Wild suit registered", SMODS.Suits[WILD] ~= nil)
   check("Wild cards exist for every rank", G.P_CARDS.quint_W_A ~= nil and G.P_CARDS.quint_W_2 ~= nil)
-  for _, key in ipairs({ "j_quint_wacky", "j_quint_shrewd", "j_quint_coalition", "j_quint_envious",
+  for _, key in ipairs({ "j_quint_wacky", "j_quint_shrewd", "j_quint_coalition",
                          "c_quint_quaoar", "c_quint_haumea", "c_quint_sedna", "c_quint_makemake" }) do
     check("registered " .. key, G.P_CENTERS[key] ~= nil)
   end
@@ -144,10 +144,6 @@ local function run()
   check("Shrewd Joker: +80 Chips on a Spectrum", r and r.chips == 80)
   r = calc("j_quint_coalition", spectrum_context)
   check("The Coalition: x3 Mult on a Spectrum", r and r.xmult == 3)
-  local scored, kicker = card("S_A"), card("H_5")
-  calc("j_quint_envious", { before = true, scoring_hand = { scored }, full_hand = { scored, kicker } })
-  check("Envious Joker: the card that didn't score turns Wild", kicker.base.suit == WILD, kicker.base.suit)
-  check("Envious Joker: the scoring card doesn't", scored.base.suit == "Spades", scored.base.suit)
 
   -- Tooltip
   local ok, ui = pcall(function() return card("W_8"):generate_UIBox_ability_table() end)

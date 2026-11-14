@@ -8,11 +8,12 @@ in the normal deck, green in the high-contrast deck.
 
 Round 2: the fronts are now derived from Balatro's own deck so they read as
 the same hand. Rank glyphs are vanilla's, re-inked. The three courts are
-collages of vanilla courts: each takes its head from one suit, its robes
-from a second and what it holds from a third, so all four old suits turn up
-across J, Q, K. The robes are re-inked Wild purple; heads and held things
-keep the colours of the suit they came from. On the Ace the asterisk's arms
-are inked in the four suit colours, with Wild's own purple up the middle.
+collages of two vanilla courts of the same rank: the head from one suit, the
+robes, frame and held things from another, so all four old suits turn up
+across J, Q, K. The robes are re-inked Wild purple; the heads keep the
+colours of the suit they came from. On the Ace the asterisk's arms are
+inked in the four suit colours, with Wild's own purple up the middle. The
+high-contrast sheet takes its colours from vanilla's high-contrast deck.
 
 The pips, the layouts and the collage rules are this program's; the court
 and glyph pixels are LocalThunk's (see NOTES.md for the exact list).
@@ -22,6 +23,7 @@ fable, 2026-11-14 (claude-fable-5-2)
 from __future__ import annotations
 
 import numpy as np
+from PIL import Image
 
 import vanilla as V
 from pixel import Canvas, Palette, sheet
@@ -38,9 +40,12 @@ NORMAL = dict(
     r="#fe5f55",   # the red the black suits use as a second colour
     H="#f03464", D="#f06b3f", C="#235955", S="#3c4368",   # the four suits
 )
+# Vanilla's high-contrast card ink, where its pips are flat. hc_sheet() takes the
+# exact high-contrast colours from vanilla wherever it can (its suits are shaded
+# top to bottom), so these only cover what it doesn't reach.
 HIGH_CONTRAST = dict(
     m="#1fa84f", d="#157a39",
-    H="#f83b2f", D="#e39100", C="#009cfd", S="#8a71e1",
+    H="#d01d11", D="#c77f00", C="#009cfd", S="#374649",
 )
 PAL = Palette(**NORMAL)
 PAL_HC = PAL.swapped(**HIGH_CONTRAST)
@@ -221,12 +226,71 @@ def ui_icon():
     return c
 
 
+# ---------------------------------------------------------- high contrast ----
+# Vanilla's high-contrast deck is not a palette swap of the normal one: its suit
+# inks are shaded top to bottom, and its courts change accents per suit. So the
+# high-contrast sheet is built from vanilla's high-contrast sheet, not re-inked.
+LC_INK = dict(H="f03464", D="f06b3f", C="235955", S="3c4368")
+
+
+def hc_ace_shades(suit):
+    """Row y -> the colour vanilla's high-contrast Ace of `suit` uses there,
+    read where its normal Ace has the suit's ink."""
+    row, col = SUIT_ROW[suit], RANK_COL["A"]
+    lc = V.hexes(V.cell("8BitDeck", col, row))
+    hc = V.cell("8BitDeck_opt2", col, row)
+    shades, have = np.zeros((H, 4), np.uint8), np.zeros(H, bool)
+    for y in range(H):
+        xs = np.nonzero(lc[y] == LC_INK[suit])[0]
+        if len(xs):
+            px, n = np.unique(hc[y, xs], axis=0, return_counts=True)
+            shades[y], have[y] = px[np.argmax(n)], True
+    ys = np.nonzero(have)[0]
+    for y in range(H):                          # rows the pip doesn't reach
+        if not have[y]:
+            shades[y] = shades[ys[np.argmin(np.abs(ys - y))]]
+    return shades
+
+
+def hc_sheet(d):
+    """The high-contrast deck as RGBA. Our own ink (Wild, outline) takes the
+    high-contrast palette; every pixel a court took from vanilla takes
+    vanilla's high-contrast pixel from the same place; the Ace's four suit arms
+    take the high-contrast Aces' shading, row by row."""
+    out = d.rgba(PAL_HC).copy()
+    own = d.mask("m", "d", "k") | (d.a == 0)
+    for rank in "JQK":
+        head, robes, *half = COURTS[rank]
+        col = RANK_COL[rank]
+        hm = head_region(*half)
+        src = np.where(hm[..., None], V.cell("8BitDeck_opt2", col, SUIT_ROW[head]),
+                       V.cell("8BitDeck_opt2", col, SUIT_ROW[robes]))
+        cell = out[:, col * W:(col + 1) * W]
+        take = ~own[:, col * W:(col + 1) * W] & (src[..., 3] > 0)
+        cell[take] = src[take]
+    x0 = RANK_COL["A"] * W
+    for suit in "HDCS":
+        ys, xs = np.nonzero(d.mask(suit)[:, x0:x0 + W])
+        out[ys, xs + x0] = hc_ace_shades(suit)[ys]
+    return out
+
+
+class Finished:
+    """A finished RGBA sheet that export() writes like a canvas."""
+
+    def __init__(self, a):
+        self.a = a
+
+    def image(self, pal=None):
+        return Image.fromarray(self.a, "RGBA")
+
+
 def outputs():
     """name -> (canvas, palette)"""
     d, u = deck(), ui_icon()
     return {
         "wild_deck.png": (d, PAL),
-        "wild_deck_hc.png": (d, PAL_HC),
+        "wild_deck_hc.png": (Finished(hc_sheet(d)), None),
         "wild_ui.png": (u, PAL),
         "wild_ui_hc.png": (u, PAL_HC),
     }

@@ -3,7 +3,7 @@
 Round 2 of the art derives from the base game's sprites (courts, rank
 glyphs, joker and planet cards), so the build needs the game installed.
 Nothing from the archive is stored in this repository; it is read at build
-time. Sprites derived this way are (c) LocalThunk, not GPL: see NOTES.md for
+time. Sprites derived this way are (c) LocalThunk, not MIT: see NOTES.md for
 the exact list.
 
 The archive is a zip. Set BALATRO_LOVE to point somewhere else.

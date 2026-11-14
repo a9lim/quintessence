@@ -20,10 +20,6 @@ return {
         name = "The Coalition",
         text = { "{X:mult,C:white} X#1# {} Mult if played", "hand contains", "a {C:attention}#2#" },
       },
-      j_quint_envious = {
-        name = "Envious Joker",
-        text = { "Played cards that", "don't score become", "{V:1}Wild{} cards" },
-      },
     },
     Planet = {
       c_quint_quaoar = { name = "Quaoar", text = planet_text },
@@ -60,7 +56,6 @@ return {
     },
     dictionary = {
       k_quint_minor_planets = "Minor Planets",
-      k_quint_wild = "Wild!",
     },
   },
 }

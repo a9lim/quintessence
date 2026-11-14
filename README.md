@@ -1,7 +1,7 @@
 # Quintessence
 
 [![CI](https://github.com/a9lim/quintessence/actions/workflows/ci.yml/badge.svg)](https://github.com/a9lim/quintessence/actions/workflows/ci.yml)
-[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A vanilla-plus mod for [Balatro](https://store.steampowered.com/app/2379780/Balatro/). Wild stops being an
 enhancement and becomes the **fifth suit**, and five new poker hands use it: the four **Spectrums**
@@ -76,10 +76,9 @@ light on chips because five Stones already bring 250.
 | Wacky Joker | Common | +10 Mult if played hand contains a Spectrum |
 | Shrewd Joker | Common | +80 Chips if played hand contains a Spectrum |
 | The Coalition | Rare | ×3 Mult if played hand contains a Spectrum |
-| Envious Joker | Common | Played cards that don't score become Wild |
 
 The Spectrum jokers only show up once a Spectrum is within reach: when your deck holds a Wild card, or after you
-play a Spectrum. Envious Joker shows up once your deck holds a Wild card.
+play a Spectrum.
 
 ## Other mods
 
@@ -97,7 +96,7 @@ Made by a9lim and Claude, code and art.
 
 The ideas come from other mods:
 
-- **Wild as a suit**: [Manifold](https://github.com/ouiiskey/Manifold) by ouiiskey, which also has Envious Joker.
+- **Wild as a suit**: [Manifold](https://github.com/ouiiskey/Manifold) by ouiiskey.
 - **Spectrum hands**: [Six Suits](https://github.com/Aurelius7309/SixSuits) by Aurelius7309, carried on by
   [Bunco](https://github.com/jumbocarrot0/Bunco) and [UNIK's mod](https://github.com/70UNIK/UNIKs-mod), whose dwarf
   planets these follow. [SpectrumAPI](https://github.com/lord-ruby/SpectrumAPI) lets them share one set.
@@ -107,11 +106,11 @@ No code or art is copied from them.
 
 ## License
 
-The code and the original art are [GPL-3.0-or-later](LICENSE).
+The code and the original art are [MIT](LICENSE).
 
 Some sprites in `assets/` are built from Balatro's own art, © LocalThunk, so that they match the game: the Wild
 suit's rank glyphs and court cards, the four jokers, and the planets' frames, name plates and hand strips. Those
-pixels aren't ours to license. They're included only for use with Balatro and aren't covered by the GPL.
+pixels aren't ours to license. They're included only for use with Balatro and aren't covered by the MIT license.
 [art/NOTES.md](art/NOTES.md#provenance-what-derives-from-which-vanilla-cell) lists the vanilla card behind each one.
 The programs in `art/` contain no Balatro pixels; they read the textures from your own copy of the game.
 

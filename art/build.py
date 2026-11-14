@@ -34,7 +34,7 @@ ASSETS = HERE.parent / "assets"
 EXPECT = {
     "wild_deck.png": (923, 95), "wild_deck_hc.png": (923, 95),
     "wild_ui.png": (18, 18), "wild_ui_hc.png": (18, 18),
-    "planets.png": (355, 95), "jokers.png": (284, 95), "icon.png": (34, 34),
+    "planets.png": (355, 95), "jokers.png": (213, 95), "icon.png": (34, 34),
 }
 
 

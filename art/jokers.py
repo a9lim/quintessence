@@ -1,4 +1,4 @@
-"""jokers.py — four Jokers, each re-inked from the vanilla Joker it is kin to.
+"""jokers.py — three Jokers, each re-inked from the vanilla Joker it is kin to.
 
   Wacky Joker    +Mult for a Spectrum. From Droll Joker (the Jolly / Zany /
                  Mad / Crazy / Droll family): the cap re-inked so cone, horns
@@ -10,14 +10,10 @@
   The Coalition  xMult for a Spectrum. From The Tribe (Duo / Trio / Family /
                  Order / Tribe): a plum ground, the cracks inked by direction
                  in the five suit colours, a five-suit hand.
-  Envious Joker  unscored cards turn Wild. From Greedy Joker (the suit "sin"
-                 family: Greedy, Lusty, Wrathful, Gluttonous): envy's
-                 yellow-green, and asterisks tiled behind him where the
-                 others have their suit.
 
 Round 2: the figures, lettering and frames are LocalThunk's pixels, read
 from the game archive at build time; the re-inking, the suit assignment and
-the asterisk ground are this program's. See NOTES.md for the exact cells.
+the five-suit fans are this program's. See NOTES.md for the exact cells.
 
 fable, 2026-11-14 (claude-fable-5-2)
 """
@@ -31,8 +27,6 @@ from pixel import components, erode, from_rgba, sheet
 W, H = 71, 95
 SUIT = dict(H="#f03464", D="#f06b3f", X="#8b64b4", C="#235955", S="#3c4368")
 ORDER = "HDXCS"
-PIP_SMALL = ["...###...", "...###...", "##.###.##", ".#######.", "..#####..",
-             ".#######.", "##.###.##", "...###...", "...###..."]
 
 
 def load(col, row):
@@ -100,45 +94,8 @@ def coalition():
     return c
 
 
-ENVY = {"#864b1c": "#3d6a1f", "#d66b1b": "#6f9e2e", "#f28a3c": "#93c14a",
-        "#ee9a5c": "#a3cc62", "#f0aa75": "#b4d67c", "#f3b98b": "#c4e095",
-        "#f8cbaa": "#d6ebb2", "#fde9d6": "#eef8dc"}
-
-
-def envious():
-    c = load(6, 1)
-    yy, xx = c.grid()
-    lo, hi = "#d66b1b", "#f28a3c"
-    # the patterned ground: everything of the two ground tones reachable
-    # from the card's edge
-    ground = c.mask(lo, hi)
-    edge = ground & ((xx <= 5) | (xx >= 65) | (yy <= 5) | (yy >= 89))
-    field = np.zeros_like(ground)
-    for piece in components(ground):
-        if (piece & edge).any():
-            field |= piece
-    c.fill(field, lo)
-    for j in range(-1, 9):
-        for i in range(-1, 6):
-            c_x, c_y = i * 14 + (7 if j % 2 else 0), j * 12
-            with c.clip(field):
-                c.stamp(PIP_SMALL, c_x, c_y, {"#": hi})
-    keep = {"#ffffff", "#bfc7d5"}
-    src = {k: np.array([int(k[i:i + 2], 16) for i in (1, 3, 5)]) for k in ENVY}
-    for name in list(c.pal.names[1:]):
-        if name in keep or not c.mask(name).any():
-            continue
-        if name in ENVY:
-            c.replace(name, ENVY[name])
-        else:                                   # stray tones: nearest on the ramp
-            rgb = np.array([int(name[i:i + 2], 16) for i in (1, 3, 5)])
-            near = min(src, key=lambda k: ((src[k] - rgb) ** 2).sum())
-            c.replace(name, ENVY[near])
-    return c
-
-
 def cells():
-    return [wacky(), shrewd(), coalition(), envious()]
+    return [wacky(), shrewd(), coalition()]
 
 
 def sheet_canvas():

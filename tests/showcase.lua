@@ -9,7 +9,7 @@ local palette = os.getenv("QUINTESSENCE_SHOWCASE_PALETTE")
 local saved_palettes
 
 local rows = {
-  { "j_quint_wacky", "j_quint_shrewd", "j_quint_coalition", "j_quint_envious", "j_droll", "j_tribe" },
+  { "j_quint_wacky", "j_quint_shrewd", "j_quint_coalition", "j_droll", "j_tribe" },
   { "c_quint_quaoar", "c_quint_haumea", "c_quint_sedna", "c_quint_makemake", "c_quint_asteroid_belt", "c_ceres", "c_eris" },
   { "quint_W_2", "quint_W_7", "quint_W_T", "quint_W_J", "quint_W_Q", "quint_W_K", "quint_W_A", "S_A", "H_K" },
 }
