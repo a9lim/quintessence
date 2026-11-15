@@ -26,7 +26,7 @@ this file records how the code holds them and how to check a change. Git history
 | `src/bulwark.lua`, `src/planets.lua`, `src/jokers.lua` | the rest of the content |
 | `lovely/wild.toml` | patches for vanilla code that knows Wild only as an enhancement |
 | `lovely/spectrumapi.toml` | a fix for SpectrumAPI's `SMODS.current_mod` handling |
-| `localization/en-us.lua` | all text, including overrides of vanilla's Wild and Lovers text |
+| `localization/en-us.lua` | all text, in vanilla's voice, including overrides of vanilla's Wild and Lovers text |
 | `tests/` | unit tests, the in-game self-test, the showcase |
 | `art/` | the programs that make `assets/` (see Art) |
 

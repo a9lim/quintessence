@@ -36,7 +36,7 @@ return {
     Tarot = {
       c_lovers = {
         name = "The Lovers",
-        text = { "Moves {C:attention}#1#{} selected", "card to the", "{C:attention}Wild{} suit" },
+        text = { "Converts {C:attention}#1#{} selected", "card to {C:quint_wild}Wilds" },
       },
     },
     Other = {
@@ -49,10 +49,10 @@ return {
     poker_hands = { quint_Bulwark = "Bulwark" },
     poker_hand_descriptions = {
       quint_Bulwark = { "5 cards with no rank or suit", "(Stone cards)" },
-      spa_Spectrum = { "5 cards of 5 different suits,", "one of them Wild" },
-      spa_Straight_Spectrum = { "5 cards in a row (consecutive ranks)", "of 5 different suits" },
-      spa_Spectrum_House = { "A Three of a Kind and a Pair", "of 5 different suits" },
-      spa_Spectrum_Five = { "5 cards with the same rank", "of 5 different suits" },
+      spa_Spectrum = { "5 cards with 5 different suits,", "one of them Wild" },
+      spa_Straight_Spectrum = { "5 cards in a row (consecutive ranks)", "with 5 different suits" },
+      spa_Spectrum_House = { "A Three of a Kind and a Pair", "with 5 different suits" },
+      spa_Spectrum_Five = { "5 cards with the same rank", "and 5 different suits" },
     },
     dictionary = {
       k_quint_minor_planets = "Minor Planets",

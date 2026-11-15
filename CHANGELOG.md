@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 (2026-11-15)
+
+- The Lovers reads like The Star now: "Converts 1 selected card to Wilds", with Wilds in the suit's colour.
+- The Spectrum hand descriptions match vanilla's wording for the Flush hands.
+
 ## 1.0.0 (2026-11-14)
 
 First release.

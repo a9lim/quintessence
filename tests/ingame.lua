@@ -54,11 +54,13 @@ local function expect_hand(name, spec, want, center)
   check(name, got == want, ("got %s, want %s"):format(got, want))
 end
 
-local function find_text(node, text)
-  if type(node) ~= "table" then return false end
+local function find_text(node, text, seen)
+  seen = seen or {}
+  if type(node) ~= "table" or seen[node] then return false end
+  seen[node] = true
   if node.config and node.config.text == text then return true end
   for _, v in pairs(node) do
-    if type(v) == "table" and v ~= node.parent and find_text(v, text) then return true end
+    if type(v) == "table" and find_text(v, text, seen) then return true end
   end
   return false
 end
@@ -148,6 +150,13 @@ local function run()
   -- Tooltip
   local ok, ui = pcall(function() return card("W_8"):generate_UIBox_ability_table() end)
   check("a Wild card's tooltip says it counts as every suit", ok and find_text(ui, "Counts as every suit"), ok and "text not found" or ui)
+  -- The Lovers reads like The Star: "Converts 1 selected card to Wilds", Wilds in the suit's own colour.
+  local lovers = Card(0, 0, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS.c_lovers,
+    { bypass_discovery_center = true, bypass_discovery_ui = true })
+  ok, ui = pcall(lovers.generate_UIBox_ability_table, lovers)
+  check("The Lovers converts to Wilds", ok and find_text(ui, "Wilds") and find_text(ui, "Converts "), ok and "text not found" or ui)
+  check("{C:quint_wild} is the Wild suit's colour", loc_colour("quint_wild") == G.C.SUITS[WILD])
+  lovers:remove()
 end
 
 local done, frames = false, 0
